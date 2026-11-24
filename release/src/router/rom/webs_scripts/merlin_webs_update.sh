@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Please increment whenever updater behavior or feed compatibility changes. 
+# Please increment whenever updater behavior or feed compatibility changes.
 # SCRIPT_VERSTAG format: YYMMDDHH
 readonly SCRIPT_VERSTAG="26112413"
 
