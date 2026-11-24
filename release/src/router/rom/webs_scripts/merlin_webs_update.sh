@@ -1,6 +1,8 @@
 #!/bin/sh
 
-readonly SCRIPT_VERSTAG="25072411"
+# Please increment whenever updater behavior or feed compatibility changes.
+# SCRIPT_VERSTAG format: YYMMDDHH
+readonly SCRIPT_VERSTAG="26112413"
 
 wget_options="-q -t 2 -T 30"
 
@@ -101,7 +103,7 @@ fi
 webs_state_flag=$(nvram get webs_state_flag)
 
 if [ "$webs_state_flag" -eq "1" ]; then
-	releasenote_file0=$(nvram get webs_state_info)_note.txt
+	releasenote_file0="${firmbase}_${firmver}.${buildno}_${extendno}_note.txt"
 	releasenote_path0="/tmp/release_note0.txt"
 	echo "---- download real release note ----" >> /tmp/webs_upgrade.log
 	/usr/sbin/wget $wget_options $fwsite/$releasenote_file0 -O $releasenote_path0
