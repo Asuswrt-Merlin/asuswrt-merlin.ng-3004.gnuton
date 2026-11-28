@@ -1352,6 +1352,27 @@ void repeater_filter_setting(int mode){
 #endif
 #endif
 
+/*
+ * iptables only accepts port ranges written as "start:end", but the web UI
+ * accepts and saves "start-end" or "start~end" as well. A single such entry
+ * makes iptables-restore reject the whole table (e.g. no MASQUERADE and no
+ * port forwards at all), so normalize the port list in place before use.
+ */
+static void normalize_port_list(char *port)
+{
+	char *src, *dst;
+
+	if (!port)
+		return;
+
+	for (src = dst = port; *src; src++) {
+		if (*src == ' ' || *src == '\t')
+			continue;
+		*dst++ = (*src == '-' || *src == '~') ? ':' : *src;
+	}
+	*dst = '\0';
+}
+
 void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 {
 	char *proto, *protono, *port, *lport, *srcip, *dstip, *desc;
@@ -1422,6 +1443,7 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 
 			// Handle port1,port2,port3 format
 			portp = portv = strdup(port);
+			normalize_port_list(portv);
 			while (portv && (c = strsep(&portp, ",")) != NULL) {
 				if (lport && *lport)
 					snprintf(dstips, sizeof(dstips), "--to-destination %s:%s", dstip, lport);
@@ -1501,6 +1523,7 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 
 					// Handle port1,port2,port3 format
 					portp = portv = strdup(port);
+					normalize_port_list(portv);
 					while (portv && (c = strsep(&portp, ",")) != NULL) {
 						if (lport && *lport)
 							snprintf(dstips, sizeof(dstips), "--to-destination %s:%s", dstip, lport);
@@ -1558,6 +1581,7 @@ void write_port_forwarding(FILE *fp, char *config, char *lan_ip, char *lan_if)
 
 				// Handle port1,port2,port3 format
 				portp = portv = strdup(port);
+				normalize_port_list(portv);
 				while (portv && (c = strsep(&portp, ",")) != NULL) {
 					if (lport && *lport)
 						snprintf(dstips, sizeof(dstips), "--to-destination %s:%s", dstip, lport);
@@ -4488,6 +4512,7 @@ TRACE_PT("writing Parental Control\n");
 					dstiprule[0] = '\0';
 				}
 				portp = portv = strdup(port);
+				normalize_port_list(portv);
 				while (portv && (dstports = strsep(&portp, ",")) != NULL) {
 					if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0)
 						fprintf(fp_ipv6, "-A FORWARD -m state --state NEW -p tcp -m tcp %s %s --dport %s -j %s\n", srciprule, dstiprule, dstports, logaccept);
@@ -6006,6 +6031,7 @@ TRACE_PT("writing Parental Control\n");
 					dstiprule[0] = '\0';
 				}
 				portp = portv = strdup(port);
+				normalize_port_list(portv);
 				while (portv && (dstports = strsep(&portp, ",")) != NULL) {
 					if (strcmp(proto, "TCP") == 0 || strcmp(proto, "BOTH") == 0)
 						fprintf(fp_ipv6, "-A FORWARD -m state --state NEW -p tcp -m tcp %s %s --dport %s -j %s\n",
