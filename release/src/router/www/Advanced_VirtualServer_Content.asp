@@ -723,7 +723,11 @@ function saveProfile(_mode, _wanIdx, _rowIdx) {
 	var profileArray = new Array();
 	profileArray["serviceName"] = $("#vts_desc_x").val();
 	profileArray["protocol"] = $("#vts_proto_x").val();
-	profileArray["externalPort"] = $("#vts_port_x").val();
+	/* iptables only accepts "start:end" ranges, so save "-" or "~" ranges as ":" */
+	if ($("#vts_proto_x").val() == "OTHER")
+		profileArray["externalPort"] = $("#vts_port_x").val();
+	else
+		profileArray["externalPort"] = $("#vts_port_x").val().replace(/\s/g, "").replace(/[-~]/g, ":");
 	profileArray["internalPort"] = $("#vts_lport_x").val();
 	profileArray["internalIP"] = $("#vts_ipaddr_x").val();
 	profileArray["sourceIP"] = $("#vts_target_x").val();
